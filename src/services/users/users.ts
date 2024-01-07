@@ -19,6 +19,7 @@ import { usersPath, usersMethods } from './users.shared'
 
 export * from './users.class'
 export * from './users.schema'
+import { generate, verify } from 'password-hash'
 
 // A configure function that registers the service and its hooks via `app.configure`
 export const users = (app: Application) => {
@@ -48,7 +49,17 @@ export const users = (app: Application) => {
       ],
       find: [],
       get: [],
-      create: [schemaHooks.validateData(usersDataValidator), schemaHooks.resolveData(usersDataResolver)],
+      create: [
+        schemaHooks.validateData(usersDataValidator),
+        schemaHooks.resolveData(usersDataResolver),
+
+        (context) => {
+          if (context.data && (context.data as { password?: string })) {
+            const hashedPassword = generate((context.data as { password?: string }).password as string)
+            ;(context.data as { password?: string }).password = hashedPassword
+          }
+        }
+      ],
       patch: [schemaHooks.validateData(usersPatchValidator), schemaHooks.resolveData(usersPatchResolver)],
       remove: []
     },
