@@ -50,10 +50,8 @@ export const login = (app: Application) => {
               .find({ query: { email: (context.data as { email?: string }).email } })
               .then((res) => res.data[0])
 
-            console.log(user)
             if (user) {
               const hashedPassword = (user as { password?: string }).password
-              console.log(hashedPassword)
               if (
                 verify((context.data as { password?: string }).password as string, hashedPassword as string)
               ) {
