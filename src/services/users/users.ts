@@ -53,7 +53,25 @@ export const users = (app: Application) => {
         schemaHooks.validateData(usersDataValidator),
         schemaHooks.resolveData(usersDataResolver),
 
-        (context) => {
+        async (context) => {
+          // Check strong password
+          const password = (context.data as { password?: string }).password as string
+          if (password.length < 8) {
+            throw new Error('Password must be at least 8 characters')
+          }
+
+          // Check email
+          const email = (context.data as { email?: string }).email as string
+          if (!email.includes('@')) {
+            throw new Error('Email must be valid')
+          }
+
+          // Check duplicate email
+          const users = await app.service(usersPath).find({ query: { email } })
+          if (users.data && users.data.length > 0) {
+            throw new Error('Email already exists')
+          }
+
           if (context.data && (context.data as { password?: string })) {
             const hashedPassword = generate((context.data as { password?: string }).password as string)
             ;(context.data as { password?: string }).password = hashedPassword
